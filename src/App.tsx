@@ -1,26 +1,49 @@
-import React from 'react';
-import logo from './logo.svg';
+import React, {useEffect, useState} from 'react';
 import './App.css';
+import { useMoralisWeb3Api } from "react-moralis";
 
 function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+
+    const [ethAddress, setEthAddress] = useState("");
+
+    const handleSubmit = (e: { preventDefault: () => void; }) => {
+        e.preventDefault();
+    }
+
+    const Web3Api = useMoralisWeb3Api();
+
+    const fetchTransactions = async () => {
+        // get mainnet transactions for any ETH address
+        const transactions = await Web3Api.account.getTransactions();
+        console.log(transactions);
+
+        // get ETH transactions for a given address
+        // with most recent transactions appearing first
+        const options = {
+            chain: "eth",
+            address: ethAddress,
+            from_block: "0",
+        };
+
+        const bscTransactions = await Web3Api.account.getTransactions(options);
+        console.log(bscTransactions);
+    };
+
+    return (
+        <div>
+            <h1>Historical Portfolio Tracker</h1>
+            <h2>Enter an Ethereum address:</h2>
+            <form onSubmit={handleSubmit}>
+                <input
+                    type="text"
+                    value={ethAddress}
+                    onChange={(e) => setEthAddress(e.target.value)}
+                />
+                <button>Enter</button>
+            </form>
+        </div>
+    );
 }
 
 export default App;
+

@@ -25,8 +25,8 @@ function App() {
             from_block: "0",
         };
 
-        const bscTransactions = await Web3Api.account.getTransactions(options);
-        console.log(bscTransactions);
+        const addressTransactions = await Web3Api.account.getTransactions(options);
+        console.log(addressTransactions);
     };
 
     return (

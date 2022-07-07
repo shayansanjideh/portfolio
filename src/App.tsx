@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, { useState } from 'react';
 import './App.css';
 import { useMoralisWeb3Api } from "react-moralis";
 
@@ -12,21 +12,27 @@ function App() {
 
     const Web3Api = useMoralisWeb3Api();
 
+    // get ETH transactions for a given address
+    // with most recent transactions appearing first
     const fetchTransactions = async () => {
-        // get mainnet transactions for any ETH address
-        const transactions = await Web3Api.account.getTransactions();
-        console.log(transactions);
 
-        // get ETH transactions for a given address
-        // with most recent transactions appearing first
         const options = {
-            chain: "eth",
             address: ethAddress,
-            from_block: "0",
         };
 
-        const addressTransactions = await Web3Api.account.getTransactions(options);
-        console.log(addressTransactions);
+        // `transactions` refers to the entire JSON object of transactions pulled from the Moralis library
+        const transactions = await Web3Api.account.getTransactions(options);
+        // `txs` refers to the individual transactions and their associated metadata
+        const txs = transactions.result;
+
+        if (txs) {
+            txs.forEach(tx => {
+                // getEthPrice(tx.block_number)
+            })
+        }
+
+        // const getEthPrice
+
     };
 
     return (
@@ -39,7 +45,9 @@ function App() {
                     value={ethAddress}
                     onChange={(e) => setEthAddress(e.target.value)}
                 />
-                <button>Enter</button>
+                <button onClick={fetchTransactions}>
+                    Enter
+                </button>
             </form>
         </div>
     );

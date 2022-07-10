@@ -28,24 +28,23 @@ function App() {
 
         if (txs) {
             for (let tx of txs) {
-
                 // If a tx is an ERC-20 token tx.value will be 0
                 if (tx.value === "0") {
-                    // Initialize net_value_token, i.e. the total value of a particular ERC-20 token in a user's
-                    // wallet
-                    // let net_token_value: number = 0
+                    // Initialize net_token_value, the total value of all ERC-20 tokens in a user's wallet
+                    let net_token_value = 0;
 
                     let erc20_args = {
                         address: ethAddress,
                         to_block: parseInt(tx.block_number),
                     };
+                    // Retrieve complete list of all ERC-20 tokens in a wallet
                     let erc20_tokens = await Web3Api.account.getTokenBalances(erc20_args);
 
-                    // Loop through the complete list of ERC-20 tokens in a user's wallet
+                    // Loop through the list of ERC-20 tokens
                     // Here the various metadata is initialized
                     for (let token of erc20_tokens) {
-                        let token_balance = token.balance;
-                        let token_decimals = token.decimals;
+                        let token_balance = parseInt(token.balance);
+                        let token_decimals = parseInt(token.decimals);
                         let token_logo = token.logo;
                         let token_name = token.name;
                         let token_symbol = token.symbol;
@@ -54,15 +53,30 @@ function App() {
 
                         let token_price_args = {
                             address: token_address,
+                            to_block: parseInt(tx.block_number),
                         }
-
+                        // Retrieve the token's price at the block of the transaction
                         let token_price = await Web3Api.token.getTokenPrice(token_price_args);
+
+                        // Calculate value of a particular token
+                        let token_value = token_balance * Math.pow(10, -(token_decimals)) * token_price.usdPrice;
+
+                        net_token_value += token_value;
                     }
-                    console.log(erc20_tokens)
+                    // console.log("list of ERC-20 tokens: ", erc20_tokens);
+                    console.log("net_token_value: ", net_token_value);
 
                     // If a tx has a non-zero value it is in native ETH
-                } else {
-                    console.log(tx.value)
+                } else { // 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2
+                    let eth_balance = parseInt(tx.value) * Math.pow(10, -18);
+                    let token_price_args = {
+                        address: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2", // Hard-coded address of wETH
+                        to_block: parseInt(tx.block_number),
+                    }
+                    // Retrieve the token's price at the block of the transaction
+                    let eth_price = await Web3Api.token.getTokenPrice(token_price_args);
+                    let eth_value = eth_balance * eth_price.usdPrice;
+                    console.log("eth_value: ", eth_value);
                 }
             }
         }

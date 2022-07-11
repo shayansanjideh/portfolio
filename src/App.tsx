@@ -28,11 +28,10 @@ function App() {
 
         if (txs) {
             for (let tx of txs) {
+                let net_token_value = 0;
+                let net_eth_value = 0;
                 // If a tx is an ERC-20 token tx.value will be 0
                 if (tx.value === "0") {
-                    // Initialize net_token_value, the total value of all ERC-20 tokens in a user's wallet
-                    let net_token_value = 0;
-
                     let erc20_args = {
                         address: ethAddress,
                         to_block: parseInt(tx.block_number),
@@ -45,10 +44,10 @@ function App() {
                     for (let token of erc20_tokens) {
                         let token_balance = parseInt(token.balance);
                         let token_decimals = parseInt(token.decimals);
-                        let token_logo = token.logo;
-                        let token_name = token.name;
-                        let token_symbol = token.symbol;
-                        let token_thumbnail = token.thumbnail;
+                        // let token_logo = token.logo;
+                        // let token_name = token.name;
+                        // let token_symbol = token.symbol;
+                        // let token_thumbnail = token.thumbnail;
                         let token_address = token.token_address;
 
                         let token_price_args = {
@@ -67,17 +66,20 @@ function App() {
                     console.log("net_token_value: ", net_token_value);
 
                     // If a tx has a non-zero value it is in native ETH
-                } else { // 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2
+                } else {
                     let eth_balance = parseInt(tx.value) * Math.pow(10, -18);
+                    const wETH_ADDRESS = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2";
                     let token_price_args = {
-                        address: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2", // Hard-coded address of wETH
+                        address: wETH_ADDRESS,
                         to_block: parseInt(tx.block_number),
                     }
                     // Retrieve the token's price at the block of the transaction
                     let eth_price = await Web3Api.token.getTokenPrice(token_price_args);
-                    let eth_value = eth_balance * eth_price.usdPrice;
-                    console.log("eth_value: ", eth_value);
+                    net_eth_value = eth_balance * eth_price.usdPrice;
+                    console.log("eth_value: ", net_eth_value);
                 }
+                // TODO: Make this logic work somehow?
+                let net_portfolio_value = net_eth_value + net_token_value;
             }
         }
     };
@@ -101,4 +103,3 @@ function App() {
 }
 
 export default App;
-
